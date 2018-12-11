@@ -62,6 +62,11 @@ public class UIManager : MonoBehaviour
     #endregion
     #endregion
 
+    void start(){
+        txtPlatformDimensions = null;
+        txtPlatformYAxisRange = null;
+    }
+
     private void OnEnable()
     {
         PlatformManager.OnPlatformManagerChanged += PlatformManager_OnPlatformManagerChanged;
@@ -92,9 +97,9 @@ public class UIManager : MonoBehaviour
 
     private void PlatformManager_OnPlatformManagerUpdateUI()
     {
-        if(!PlatformManager.Instance.Program)
+        if(!PlatformManager.Instance.Program && sliderYRange != null)
             sliderYRange.value = PlatformManager.Instance.configurationData.RandomHeight; //0.0f;
-        else
+        else if(sliderYRange != null)
             sliderYRange.value = 0.0f;
 
         // check to see if they are null or not ...
@@ -120,8 +125,10 @@ public class UIManager : MonoBehaviour
 
             if (txtPlatformDeltaSpacing!=null)
                 txtPlatformDeltaSpacing.text = string.Format("{0:0.00}f", data.deltaSpace);
-            txtPlatformDimensions.text = string.Format("{0}x{1}", data.M, data.N);
-            txtPlatformYAxisRange.text = string.Format("{0}", data.RandomHeight);
+            if (txtPlatformDimensions!=null)
+                txtPlatformDimensions.text = string.Format("{0}x{1}", data.M, data.N);
+            if (txtPlatformYAxisRange!=null)
+                txtPlatformYAxisRange.text = string.Format("{0}", data.RandomHeight);
 
             if (OnUpdateComeraPosition != null)
                 OnUpdateComeraPosition(data);
