@@ -40,6 +40,10 @@ namespace ver2
 
         public bool SimulateTest = false;
         public bool Program = false;
+        public bool Simulate = false;//added by Moses
+
+        Queue<float []> rows = null;//added by Moses
+        int nodeCounter = 0, totalNodes;//added by Moses
 
         //public ColorShade shade = ColorShade.GrayScale;
 
@@ -60,6 +64,7 @@ namespace ver2
             UIManager.OnReadFromText += UIManager_OnReadFromText;
             //UIManager.OnUpdatePlatformNode += UIManager_OnUpdatePlatformNode;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            PlatformDataNode.OnNodeReachedPosition += PlatformDataNode_OnNodeReachedPosition;//added by Moses
         }
 
         private void OnDisable()
@@ -69,6 +74,7 @@ namespace ver2
             UIManager.OnReadFromText -= UIManager_OnReadFromText;
             //UIManager.OnUpdatePlatformNode -= UIManager_OnUpdatePlatformNode;
             SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+            PlatformDataNode.OnNodeReachedPosition -= PlatformDataNode_OnNodeReachedPosition;//added by Moses
         }
 
         private void UIManager_BuildPlatformOnClicked(PlatformConfigurationData pcd)
@@ -91,6 +97,17 @@ namespace ver2
                     Program = true;
                 else
                     Program = false;
+
+                if (SceneManager.GetActiveScene().name.Contains("Simulation")){//Added by Moses
+                    Simulate = true;
+
+                    //creates lists to control simulation
+                    initializeSimulationControl();//added 12-3
+                }
+                else{
+                    Simulate = false;
+                    //Destroy 
+                }
 
                 BuildPlatform();
 
@@ -234,7 +251,9 @@ namespace ver2
 
         public void StartSimulationButtonClick()
         {
-            SimulateTest = !SimulateTest;
+            //SimulateTest = !SimulateTest;//added by Moses
+            totalNodes = configurationData.M * configurationData.N; //put outside update loop
+            Simulate = !Simulate;
         }
         #endregion
 
@@ -322,6 +341,32 @@ namespace ver2
                 }
             }
             #endregion
+
+            if(Simulate){//added by Moses
+                float[] tempRow;
+                
+                if(nodeCounter == totalNodes){ //do not update control until all platforms reach their destinations
+                    
+                    //when each node reaches height, add 1 to nodeCounter
+                    //this is handled by PlatformDataNode_OnNodeReachedPosition()
+
+                    tempRow = rows.Dequeue(); //shift the rows by one
+                    rows.Enqueue(tempRow);    //will start with the next row
+
+                    for(int i=0;i<configurationData.M;i++)
+                    {
+                        tempRow = rows.Dequeue();
+
+                        for(int j=0;j<configurationData.N;j++){
+                            platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition = tempRow[j];//may want to  
+                            platformNode[i,j].GetComponent<PlatformDataNode>().Simulate=true;//use a delegate for these
+                        }
+
+                        rows.Enqueue(tempRow);//return to queue
+                    }
+                    nodeCounter = 0;//reset to repeat process 
+                }  
+            }
         }
 
         /// <summary>
@@ -340,6 +385,45 @@ namespace ver2
             //}
             return results.Count > 0;
         }
+
+        #region Added by Moses
+         private void initializeSimulationControl(){//added 12-3
+            //create N lists, each are M nodes long
+            rows = new Queue<float[]>();
+
+            for(int i=0; i<configurationData.M; i++){
+                rows.Enqueue(new float [configurationData.N]);
+            }
+        }
+
+        private void destroySimulationControl(){//added 12-3
+
+            for(int i=0; i<configurationData.M; i++){
+                rows.Dequeue();
+            }
+
+            rows = null;
+        }
+
+        private void PlatformDataNode_OnNodeReachedPosition(){//added 12-3
+            nodeCounter++;
+        }
+        private void loadDataToNodes(float[][] inputArray){//pull data from file and place in row queue
+
+            float[] tempRow;
+            for(int i=0;i<configurationData.M;i++)
+            {
+                tempRow = rows.Dequeue();
+
+                for(int j=0;j<configurationData.N;j++){
+                    
+                }
+
+                rows.Enqueue(tempRow);//return to queue
+            }
+            nodeCounter = totalNodes;//allows simulation to start
+        }
+        #endregion
     }
 }
 

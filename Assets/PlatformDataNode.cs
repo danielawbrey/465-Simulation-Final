@@ -10,6 +10,9 @@ public class PlatformDataNode : MonoBehaviour {
     #region Platform Manager Custom Events
     public delegate void UpdatePlatformDataNodeUI(PlatformDataNode data);
     public static event UpdatePlatformDataNodeUI OnUpdatePlatformDataNodeUI;
+
+    public delegate void NodeReachedPosition();//added by Moses
+    public static event NodeReachedPosition OnNodeReachedPosition;
     #endregion
 
     public bool Simulate;
@@ -160,11 +163,11 @@ public class PlatformDataNode : MonoBehaviour {
                 //if (currentSelection != null)
                 {
                     // smooth transition the color ...
-                    transform.gameObject.GetComponent<Renderer>().material.color =
+                    /*transform.gameObject.GetComponent<Renderer>().material.color =//commented out by Moses
                         Color.Lerp(
                             transform.gameObject.GetComponent<Renderer>().material.color,
                             NextColor,
-                            Time.deltaTime);
+                            Time.deltaTime);*/
 
                     // smooth transition the position
                     transform.position = Vector3.Lerp(transform.position,
@@ -176,8 +179,12 @@ public class PlatformDataNode : MonoBehaviour {
                     if (NearlyEquals(transform.position.y, NextPosition))
                     {
                         Simulate = false;
-                        NextPosition = 0;
-                        NextColor = Color.white;
+                        //NextPosition = 0;
+                        //NextColor = Color.white;//commented out by Moses
+
+                        //trigger event in PlatMngr to add 1 to PlatformManager.nodeCounter
+                         if (OnNodeReachedPosition != null)//added by Moses
+                            OnNodeReachedPosition();
                     }
 
                     transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", transform.position.y);
