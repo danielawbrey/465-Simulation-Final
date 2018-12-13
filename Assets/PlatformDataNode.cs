@@ -161,7 +161,7 @@ public class PlatformDataNode : MonoBehaviour {
             if (Simulate)
             {
                 //if (currentSelection != null)
-                {
+                //{
                     // smooth transition the color ...
                     /*transform.gameObject.GetComponent<Renderer>().material.color =//commented out by Moses
                         Color.Lerp(
@@ -170,32 +170,39 @@ public class PlatformDataNode : MonoBehaviour {
                             Time.deltaTime);*/
 
                     // smooth transition the position
-                    transform.position = Vector3.Lerp(transform.position,
+                Debug.Log("NextPosition "+i+"-"+j+": "+NextPosition);
+                transform.position = Vector3.Lerp(transform.position,
+                                                new Vector3(transform.position.x,
+                                                            NextPosition,
+                                                            transform.position.z),
+                                                Time.deltaTime);
+
+                if (NearlyEquals(transform.position.y, NextPosition))
+                {
+                    //NextPosition = 0;
+                    //NextColor = Color.white;//commented out by Moses
+
+                    transform.position =  new Vector3(transform.position.x,
+                                                            NextPosition,
+                                                            transform.position.z);
+                    //trigger event in PlatMngr to add 1 to PlatformManager.nodeCounter
+                        if (OnNodeReachedPosition != null)//added by Moses
+                        OnNodeReachedPosition();
+
+                    Simulate = false;
+                }
+
+                //transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", transform.position.y);
+
+                //}
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position,
                                                     new Vector3(transform.position.x,
                                                                 NextPosition,
                                                                 transform.position.z),
                                                     Time.deltaTime);
-
-                    if (NearlyEquals(transform.position.y, NextPosition))
-                    {
-                        Simulate = false;
-                        //NextPosition = 0;
-                        //NextColor = Color.white;//commented out by Moses
-
-                        //trigger event in PlatMngr to add 1 to PlatformManager.nodeCounter
-                         if (OnNodeReachedPosition != null)//added by Moses
-                            OnNodeReachedPosition();
-                    }
-
-                    transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", transform.position.y);
-
-                }
-            }
-            else
-            {
-
-
-
             }
         }
     }

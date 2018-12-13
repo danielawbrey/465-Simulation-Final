@@ -50,7 +50,7 @@ namespace ver2
         #region Selected Node Information Display Variables
         [Header("Selected Node UI Controls")]
         GameObject currentSelection = null;
-        private PlatformDataNode[,] platformProgram;
+        //private PlatformDataNode[,] platformProgram;//removed by Moses 12-12
 
         //public Text txtSelectedNodeName;
         //public Text txtSelectedNodePosition;
@@ -98,21 +98,23 @@ namespace ver2
                 else
                     Program = false;
 
-                if (SceneManager.GetActiveScene().name.Contains("Simulation")){//Added by Moses
-                    Simulate = true;
+                
+                //BuildPlatform();
 
+                if (OnPlatformManagerUpdateUI != null)
+                    OnPlatformManagerUpdateUI();
+
+
+                if (SceneManager.GetActiveScene().name.Contains("Simulation")){//Added by Moses 
                     //creates lists to control simulation
+                    Debug.Log("initializeSimulationControl() called by SceneManager_sceneLoaded");// <---   <---  remove later
                     initializeSimulationControl();//added 12-3
                 }
                 else{
                     Simulate = false;
+                    Debug.Log("initializeSimulationControl() was not called by SceneManager_sceneLoaded");
                     //Destroy 
                 }
-
-                BuildPlatform();
-
-                if (OnPlatformManagerUpdateUI != null)
-                    OnPlatformManagerUpdateUI();
             }
 
             Debug.Log(SceneManager.GetActiveScene().name);
@@ -126,7 +128,7 @@ namespace ver2
 
         private void UIManager_OnReadFromText()
         {
-            using (System.IO.StreamReader sr = new System.IO.StreamReader(Path.Combine(Application.dataPath, "Text.txt")))
+            using (System.IO.StreamReader sr = new System.IO.StreamReader(Path.Combine(Application.dataPath, "WriteLines.txt")))
             {
                 Debug.Log("Starting to Read from File");
 
@@ -146,19 +148,25 @@ namespace ver2
                 Debug.Log("Platform Config Data Read");
                 BuildPlatform();
 
-                platformProgram = new PlatformDataNode[configurationData.M, configurationData.N];
+                //platformProgram = new PlatformDataNode[configurationData.M, configurationData.N];//removed by Moses 12-12
 
                 string[] data;
                 while ((line = sr.ReadLine()) != null)
                 {
                     data = line.Split(',');
-                    PlatformDataNode nodeData = new PlatformDataNode();
+                    /* PlatformDataNode nodeData = new PlatformDataNode();//changed by Moses 12-12
 
                     nodeData.i = Convert.ToInt32(data[0]);
                     nodeData.j = Convert.ToInt32(data[1]);
                     nodeData.NextPosition = (float)Convert.ToDouble(data[2]);
 
-                    platformProgram[nodeData.i, nodeData.j] = nodeData;
+                    platformProgram[nodeData.i, nodeData.j] = nodeData;*/
+
+                    int i = Convert.ToInt32(data[0]);//added by Moses 12-12
+                    int j = Convert.ToInt32(data[1]);
+                    platformNode[i,j].GetComponent<PlatformDataNode>().i = i;
+                    platformNode[i,j].GetComponent<PlatformDataNode>().j = j;
+                    platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition = (float)Convert.ToDouble(data[2]);
 
                 }
                 Debug.Log("Node Data Read");
@@ -175,11 +183,11 @@ namespace ver2
             using (StreamWriter outputFile = new StreamWriter(Path.Combine(Application.dataPath, "WriteLines.txt")))
             {
                 outputFile.WriteLine(configurationData.ToString());
-                for (int i = 0; i < oldM; i++)
+                for (int i = 0; i < configurationData.M; i++)//edit by Moses (was oldM)
                 {
-                    for (int j = 0; j < oldN; j++)
+                    for (int j = 0; j < configurationData.N; j++)//edit by Moses (was oldN)
                     {
-                        //Debug.Log(platformNode[i, j].GetComponent<PlatformDataNodeVer2>().ToString());
+                        //Debug.Log(platformNode[i, j].GetComponent<PlatformDataNode>().ToString());
                         outputFile.WriteLine(platformNode[i, j].GetComponent<PlatformDataNode>().ToString());
                     }
                 }
@@ -208,6 +216,7 @@ namespace ver2
 
         public void BuildPlatform()
         {
+            Debug.Log("A platform has been built");
             DestroyPlatform();
 
             platformNode = new GameObject[configurationData.M, configurationData.N];
@@ -234,6 +243,7 @@ namespace ver2
                     platformBase.AddComponent<PlatformDataNode>();
 
                     platformNode[i, j] = platformBase;
+                    platformNode[i, j].transform.SetParent(transform,true);//becomes child of PlatformManager, added by Moses
 
                     PlatformDataNode pdn = platformBase.transform.GetComponent<PlatformDataNode>();
                     pdn.Program = Program;
@@ -252,7 +262,7 @@ namespace ver2
         public void StartSimulationButtonClick()
         {
             //SimulateTest = !SimulateTest;//added by Moses
-            totalNodes = configurationData.M * configurationData.N; //put outside update loop
+            
             Simulate = !Simulate;
         }
         #endregion
@@ -359,7 +369,7 @@ namespace ver2
 
                         for(int j=0;j<configurationData.N;j++){
                             platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition = tempRow[j];//may want to  
-                            platformNode[i,j].GetComponent<PlatformDataNode>().Simulate=true;//use a delegate for these
+                            platformNode[i,j].GetComponent<PlatformDataNode>().Simulate = true;//use a delegate for these?
                         }
 
                         rows.Enqueue(tempRow);//return to queue
@@ -388,12 +398,24 @@ namespace ver2
 
         #region Added by Moses
          private void initializeSimulationControl(){//added 12-3
+            Debug.Log("Loading Data");
             //create N lists, each are M nodes long
             rows = new Queue<float[]>();
+            float[] tempRow = new float[configurationData.N];
 
             for(int i=0; i<configurationData.M; i++){
-                rows.Enqueue(new float [configurationData.N]);
+                 for(int j=0;j<configurationData.N;j++){
+                    platformNode[i,j].GetComponent<PlatformDataNode>().Program = false;//added 12-12
+                    tempRow[j]= platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition;//added 12-12
+                    Debug.Log("NextPosition of platform "+i+ " " +j+ " :"+ platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition);// <--- <--- for testing purposes
+                }
+                rows.Enqueue(tempRow);
             }
+
+            totalNodes = configurationData.M * configurationData.N; //put outside update loop
+            nodeCounter = 0;//allows simulation to start
+
+            StartSimulationButtonClick();//   <---   <---   <---   <---   <---   <---   <---   <---   <---   To be removed
         }
 
         private void destroySimulationControl(){//added 12-3
@@ -407,22 +429,23 @@ namespace ver2
 
         private void PlatformDataNode_OnNodeReachedPosition(){//added 12-3
             nodeCounter++;
+            Debug.Log("nodeCounter value: " + nodeCounter);
         }
-        private void loadDataToNodes(float[][] inputArray){//pull data from file and place in row queue
+        /*private void loadDataToNodes(){//pull data from file and place in row queue
 
             float[] tempRow;
             for(int i=0;i<configurationData.M;i++)
             {
-                tempRow = rows.Dequeue();
 
+                tempRow = rows.Dequeue();
                 for(int j=0;j<configurationData.N;j++){
-                    
+                    tempRow[j]= platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition;//added 12-12
                 }
 
                 rows.Enqueue(tempRow);//return to queue
             }
             nodeCounter = totalNodes;//allows simulation to start
-        }
+        }*/
         #endregion
     }
 }
