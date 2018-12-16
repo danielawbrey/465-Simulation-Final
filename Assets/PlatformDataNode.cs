@@ -82,7 +82,9 @@ public class PlatformDataNode : MonoBehaviour {
         Text displayText  = transform.GetComponent<Text>();
         displayText.transform.SetParent(myCanvas.transform);
 
-        NextPosition = transform.position.y;
+        //NextPosition = transform.position.y;
+        
+        Debug.Log("PDN_Start() NextPosition: "+NextPosition);
         ResetDataNode();
     }
 
@@ -90,16 +92,16 @@ public class PlatformDataNode : MonoBehaviour {
     {
         if(!Program)
         {
-            Simulate = true;
+            Simulate = false;//changed by Moses 12-14
             Selected = false;
 
             NextColor = Color.white;
-            NextPosition = 0.0f;
+            //NextPosition = 0.0f;
             //sliderSelectedProgramNodeHeight.value = transform.position.y;
         }
         else
         {
-            Simulate = true;
+            Simulate = false;//chasnged by Moses 12-14
             Selected = false;
         }
     }
@@ -155,8 +157,7 @@ public class PlatformDataNode : MonoBehaviour {
             }
             return;
         }
-
-        if (!Program)
+        else//if (!Program)
         {
             if (Simulate)
             {
@@ -170,12 +171,12 @@ public class PlatformDataNode : MonoBehaviour {
                             Time.deltaTime);*/
 
                     // smooth transition the position
-                Debug.Log("NextPosition "+i+"-"+j+": "+NextPosition);
+                Debug.Log("PDN_NextPosition "+i+"-"+j+": "+NextPosition);
                 transform.position = Vector3.Lerp(transform.position,
                                                 new Vector3(transform.position.x,
                                                             NextPosition,
                                                             transform.position.z),
-                                                Time.deltaTime);
+                                                Time.deltaTime*4);//changed by Moses 12-15
 
                 if (NearlyEquals(transform.position.y, NextPosition))
                 {
@@ -196,18 +197,18 @@ public class PlatformDataNode : MonoBehaviour {
 
                 //}
             }
-            else
+            /*else
             {
                 transform.position = Vector3.Lerp(transform.position,
                                                     new Vector3(transform.position.x,
                                                                 NextPosition,
                                                                 transform.position.z),
                                                     Time.deltaTime);
-            }
+            }*/
         }
     }
 
-    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference = 0.01f)
+    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference = 0.03f)//was 0.01f
     {
         if (value1 != value2)
         {

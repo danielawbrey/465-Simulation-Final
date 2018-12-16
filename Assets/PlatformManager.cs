@@ -19,14 +19,14 @@ namespace ver2
         public static event PlatformManagerUpdateUI OnPlatformManagerUpdateUI;
         #endregion
 
-        public enum ColorShade
+        /*public enum ColorShade
         {
             GrayScale,
             RedScale,
             GreenScale,
             BlueScale,
             Random
-        }
+        }*/
 
         public GameObject PlatformBasePref;
         public int oldM;
@@ -38,7 +38,7 @@ namespace ver2
 
         public GameObject[,] platformNode;
 
-        public bool SimulateTest = false;
+        //public bool SimulateTest = false;
         public bool Program = false;
         public bool Simulate = false;//added by Moses
 
@@ -101,20 +101,17 @@ namespace ver2
                 
                 //BuildPlatform();
 
-                if (OnPlatformManagerUpdateUI != null)
-                    OnPlatformManagerUpdateUI();
-
-
                 if (SceneManager.GetActiveScene().name.Contains("Simulation")){//Added by Moses 
                     //creates lists to control simulation
-                    Debug.Log("initializeSimulationControl() called by SceneManager_sceneLoaded");// <---   <---  remove later
                     initializeSimulationControl();//added 12-3
                 }
                 else{
                     Simulate = false;
-                    Debug.Log("initializeSimulationControl() was not called by SceneManager_sceneLoaded");
                     //Destroy 
                 }
+
+                if (OnPlatformManagerUpdateUI != null)
+                    OnPlatformManagerUpdateUI();
             }
 
             Debug.Log(SceneManager.GetActiveScene().name);
@@ -216,7 +213,6 @@ namespace ver2
 
         public void BuildPlatform()
         {
-            Debug.Log("A platform has been built");
             DestroyPlatform();
 
             platformNode = new GameObject[configurationData.M, configurationData.N];
@@ -288,6 +284,8 @@ namespace ver2
             if (platformNode == null)
                 return;
 
+            if (Input.GetKeyUp(KeyCode.Space))
+                StartSimulationButtonClick();
             //if (Input.GetKeyUp(KeyCode.T))
             //    SimulateTest = !SimulateTest;
             //if (Input.GetKeyUp(KeyCode.H))
@@ -360,20 +358,28 @@ namespace ver2
                     //when each node reaches height, add 1 to nodeCounter
                     //this is handled by PlatformDataNode_OnNodeReachedPosition()
 
-                    tempRow = rows.Dequeue(); //shift the rows by one
-                    rows.Enqueue(tempRow);    //will start with the next row
-
                     for(int i=0;i<configurationData.M;i++)
                     {
                         tempRow = rows.Dequeue();
 
+                        Debug.Log("Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);//  <---  <---  <---  <---  <---  <---Remove later(for testing)
+
                         for(int j=0;j<configurationData.N;j++){
                             platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition = tempRow[j];//may want to  
                             platformNode[i,j].GetComponent<PlatformDataNode>().Simulate = true;//use a delegate for these?
+                            
+                            //for testing
+                            if(i==2 && j==1){
+                                Debug.Log("PM_Node 2-1 NextPosition: "+ tempRow[j]);
+                            }
                         }
 
                         rows.Enqueue(tempRow);//return to queue
                     }
+
+                    tempRow = rows.Dequeue(); //shift the rows by one
+                    rows.Enqueue(tempRow);    //will start with the next row
+
                     nodeCounter = 0;//reset to repeat process 
                 }  
             }
@@ -398,24 +404,36 @@ namespace ver2
 
         #region Added by Moses
          private void initializeSimulationControl(){//added 12-3
-            Debug.Log("Loading Data");
             //create N lists, each are M nodes long
             rows = new Queue<float[]>();
-            float[] tempRow = new float[configurationData.N];
+            //float[] tempRow = new float[configurationData.N];
 
             for(int i=0; i<configurationData.M; i++){
-                 for(int j=0;j<configurationData.N;j++){
+                float[] tempRow = new float[configurationData.N];
+                for(int j=0;j<configurationData.N;j++){
+                    
                     platformNode[i,j].GetComponent<PlatformDataNode>().Program = false;//added 12-12
+                    platformNode[i,j].GetComponent<PlatformDataNode>().Selected= false;//added 12-15
+                    //platformNode[i,j].GetComponent<Material>().color = Color.white;//added 12-15
+                    platformNode[i,j].GetComponent<Renderer>().material.color = Color.white;//added 12-15
+                    platformNode[i,j].transform.position = new Vector3(platformNode[i,j].transform.position.x,0,platformNode[i,j].transform.position.z);//added 12 -15
                     tempRow[j]= platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition;//added 12-12
-                    Debug.Log("NextPosition of platform "+i+ " " +j+ " :"+ platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition);// <--- <--- for testing purposes
                 }
                 rows.Enqueue(tempRow);
             }
 
-            totalNodes = configurationData.M * configurationData.N; //put outside update loop
-            nodeCounter = 0;//allows simulation to start
+            Debug.Log("PM_initialize_Whats in the queue?");// <--- <--- <--- <--- <--- <--- <--- <--- <--- for testing purposes
+             for(int i=0; i<configurationData.M; i++){
+                float[] tempRow = new float[configurationData.N];
+                tempRow = rows.Dequeue();
+                Debug.Log("PM_initialize_Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);
+                rows.Enqueue(tempRow);
+             }
 
-            StartSimulationButtonClick();//   <---   <---   <---   <---   <---   <---   <---   <---   <---   To be removed
+            totalNodes = configurationData.M * configurationData.N; //put outside update loop
+            nodeCounter = totalNodes;//allows simulation to start
+
+            //may want to add a boolean that doesn't allow for immediate simulation <--- <--- <--- <--- <--- <--- <--- <--- <--- <---something to consider
         }
 
         private void destroySimulationControl(){//added 12-3
