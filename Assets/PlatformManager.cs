@@ -112,6 +112,10 @@ namespace ver2
 
                 if (OnPlatformManagerUpdateUI != null)
                     OnPlatformManagerUpdateUI();
+
+                if(OnPlatformManagerChanged != null)
+                    OnPlatformManagerChanged(configurationData);//to center the camera on platform (through UI manager -> camera control)
+
             }
 
             Debug.Log(SceneManager.GetActiveScene().name);
@@ -257,7 +261,7 @@ namespace ver2
 
         public void StartSimulationButtonClick()
         {
-            //SimulateTest = !SimulateTest;//added by Moses
+            //SimulateTest = !SimulateTest;//removed by Moses
             
             Simulate = !Simulate;
         }
@@ -362,16 +366,11 @@ namespace ver2
                     {
                         tempRow = rows.Dequeue();
 
-                        Debug.Log("Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);//  <---  <---  <---  <---  <---  <---Remove later(for testing)
+                        //Debug.Log("Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);//  <---  <---  <---  <---  <---  <---Remove later(for testing)
 
                         for(int j=0;j<configurationData.N;j++){
                             platformNode[i,j].GetComponent<PlatformDataNode>().NextPosition = tempRow[j];//may want to  
-                            platformNode[i,j].GetComponent<PlatformDataNode>().Simulate = true;//use a delegate for these?
-                            
-                            //for testing
-                            if(i==2 && j==1){
-                                Debug.Log("PM_Node 2-1 NextPosition: "+ tempRow[j]);
-                            }
+                            platformNode[i,j].GetComponent<PlatformDataNode>().Simulate = true;//use a delegate for these?    
                         }
 
                         rows.Enqueue(tempRow);//return to queue
@@ -422,18 +421,18 @@ namespace ver2
                 rows.Enqueue(tempRow);
             }
 
-            Debug.Log("PM_initialize_Whats in the queue?");// <--- <--- <--- <--- <--- <--- <--- <--- <--- for testing purposes
-             for(int i=0; i<configurationData.M; i++){
+            //Debug.Log("PM_initialize_Whats in the queue?");// <--- <--- <--- <--- <--- <--- <--- <--- <--- for testing purposes
+            for(int i=0; i<configurationData.M; i++){
                 float[] tempRow = new float[configurationData.N];
                 tempRow = rows.Dequeue();
-                Debug.Log("PM_initialize_Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);
+                //Debug.Log("PM_initialize_Row "+i+": "+tempRow[0]+", "+tempRow[1]+", "+tempRow[2]+", "+tempRow[3]);
                 rows.Enqueue(tempRow);
              }
 
             totalNodes = configurationData.M * configurationData.N; //put outside update loop
             nodeCounter = totalNodes;//allows simulation to start
 
-            //may want to add a boolean that doesn't allow for immediate simulation <--- <--- <--- <--- <--- <--- <--- <--- <--- <---something to consider
+            Simulate = true;
         }
 
         private void destroySimulationControl(){//added 12-3
@@ -447,7 +446,7 @@ namespace ver2
 
         private void PlatformDataNode_OnNodeReachedPosition(){//added 12-3
             nodeCounter++;
-            Debug.Log("nodeCounter value: " + nodeCounter);
+            //Debug.Log("nodeCounter value: " + nodeCounter);
         }
         /*private void loadDataToNodes(){//pull data from file and place in row queue
 

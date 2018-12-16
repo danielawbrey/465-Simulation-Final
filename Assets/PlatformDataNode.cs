@@ -84,7 +84,6 @@ public class PlatformDataNode : MonoBehaviour {
 
         //NextPosition = transform.position.y;
         
-        Debug.Log("PDN_Start() NextPosition: "+NextPosition);
         ResetDataNode();
     }
 
@@ -171,7 +170,6 @@ public class PlatformDataNode : MonoBehaviour {
                             Time.deltaTime);*/
 
                     // smooth transition the position
-                Debug.Log("PDN_NextPosition "+i+"-"+j+": "+NextPosition);
                 transform.position = Vector3.Lerp(transform.position,
                                                 new Vector3(transform.position.x,
                                                             NextPosition,
