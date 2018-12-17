@@ -82,7 +82,8 @@ public class PlatformDataNode : MonoBehaviour {
         Text displayText  = transform.GetComponent<Text>();
         displayText.transform.SetParent(myCanvas.transform);
 
-        NextPosition = transform.position.y;
+        //NextPosition = transform.position.y;
+        
         ResetDataNode();
     }
 
@@ -90,16 +91,16 @@ public class PlatformDataNode : MonoBehaviour {
     {
         if(!Program)
         {
-            Simulate = true;
+            Simulate = false;//changed by Moses 12-14
             Selected = false;
 
             NextColor = Color.white;
-            NextPosition = 0.0f;
+            //NextPosition = 0.0f;
             //sliderSelectedProgramNodeHeight.value = transform.position.y;
         }
         else
         {
-            Simulate = true;
+            Simulate = false;//chasnged by Moses 12-14
             Selected = false;
         }
     }
@@ -155,13 +156,12 @@ public class PlatformDataNode : MonoBehaviour {
             }
             return;
         }
-
-        if (!Program)
+        else//if (!Program)
         {
             if (Simulate)
             {
                 //if (currentSelection != null)
-                {
+                //{
                     // smooth transition the color ...
                     /*transform.gameObject.GetComponent<Renderer>().material.color =//commented out by Moses
                         Color.Lerp(
@@ -170,37 +170,43 @@ public class PlatformDataNode : MonoBehaviour {
                             Time.deltaTime);*/
 
                     // smooth transition the position
-                    transform.position = Vector3.Lerp(transform.position,
+                transform.position = Vector3.Lerp(transform.position,
+                                                new Vector3(transform.position.x,
+                                                            NextPosition,
+                                                            transform.position.z),
+                                                Time.deltaTime*4);//changed by Moses 12-15
+
+                if (NearlyEquals(transform.position.y, NextPosition))
+                {
+                    //NextPosition = 0;
+                    //NextColor = Color.white;//commented out by Moses
+
+                    transform.position =  new Vector3(transform.position.x,
+                                                            NextPosition,
+                                                            transform.position.z);
+                    //trigger event in PlatMngr to add 1 to PlatformManager.nodeCounter
+                        if (OnNodeReachedPosition != null)//added by Moses
+                        OnNodeReachedPosition();
+
+                    Simulate = false;
+                }
+
+                //transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", transform.position.y);
+
+                //}
+            }
+            /*else
+            {
+                transform.position = Vector3.Lerp(transform.position,
                                                     new Vector3(transform.position.x,
                                                                 NextPosition,
                                                                 transform.position.z),
                                                     Time.deltaTime);
-
-                    if (NearlyEquals(transform.position.y, NextPosition))
-                    {
-                        Simulate = false;
-                        //NextPosition = 0;
-                        //NextColor = Color.white;//commented out by Moses
-
-                        //trigger event in PlatMngr to add 1 to PlatformManager.nodeCounter
-                         if (OnNodeReachedPosition != null)//added by Moses
-                            OnNodeReachedPosition();
-                    }
-
-                    transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", transform.position.y);
-
-                }
-            }
-            else
-            {
-
-
-
-            }
+            }*/
         }
     }
 
-    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference = 0.01f)
+    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference = 0.03f)//was 0.01f
     {
         if (value1 != value2)
         {

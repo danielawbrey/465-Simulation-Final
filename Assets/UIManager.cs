@@ -113,7 +113,7 @@ public class UIManager : MonoBehaviour
     {
         if(data != null)
         {
-            Debug.Log("Hello");
+            //Debug.Log("Hello");
             if (inputPlatformMDimension != null)
                 inputPlatformMDimension.text = data.M.ToString();
             if (inputPlatformNDimension != null)
