@@ -120,15 +120,21 @@ public class UIManager : MonoBehaviour
                 inputPlatformNDimension.text = data.N.ToString();
             if (sliderDeltaSpacing != null)
                 sliderDeltaSpacing.value = data.deltaSpace;
-            if (sliderYRange != null)
+            if (sliderYRange != null && SceneManager.GetActiveScene().name.Contains("Programming"))//added by Moses 12-17. Reset slider to zero on programming scene
+                sliderYRange.value = 0;
+            else if (sliderYRange != null)
                 sliderYRange.value = data.RandomHeight;
 
             if (txtPlatformDeltaSpacing!=null)
                 txtPlatformDeltaSpacing.text = string.Format("{0:0.00}f", data.deltaSpace);
             if (txtPlatformDimensions!=null)
                 txtPlatformDimensions.text = string.Format("{0}x{1}", data.M, data.N);
-            if (txtPlatformYAxisRange!=null)
-                txtPlatformYAxisRange.text = string.Format("{0}", data.RandomHeight);
+            if (txtPlatformYAxisRange!=null && SceneManager.GetActiveScene().name.Contains("Programming"))//added by Moses 12-17. Reset value to zero on programming scene
+                txtPlatformYAxisRange.text = string.Format("{0}", 0);
+            else if (txtPlatformYAxisRange!=null)
+                txtPlatformYAxisRange.text = string.Format("{0:0.00}f", data.RandomHeight);
+
+
 
             if (OnUpdateComeraPosition != null)
                 OnUpdateComeraPosition(data);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlatformDataNode : MonoBehaviour {
 
@@ -44,6 +45,7 @@ public class PlatformDataNode : MonoBehaviour {
         //UIManagerWithEvents.OnToggleProgram += UIManagerWithEvents_OnToggleProgram;
 
         UIManager.OnNodeProgramChanged += UIManager_OnNodeProgramChanged;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDisable()
@@ -52,6 +54,7 @@ public class PlatformDataNode : MonoBehaviour {
         //UIManagerWithEvents.OnToggleProgram -= UIManagerWithEvents_OnToggleProgram;
 
         UIManager.OnNodeProgramChanged -= UIManager_OnNodeProgramChanged;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void UIManagerWithEvents_OnToggleProgram(Toggle t)
@@ -124,8 +127,10 @@ public class PlatformDataNode : MonoBehaviour {
 
     void UpdateUI()
     {
-        txtSelectedNodeName.text = transform.name;
-        txtSelectedNodePosition.text = string.Format("Height: {0:0.00}f", transform.position.y);
+        if(txtSelectedNodeName!=null)
+            txtSelectedNodeName.text = transform.name;
+        if(txtSelectedNodePosition!=null)
+            txtSelectedNodePosition.text = string.Format("Height: {0:0.00}f", transform.position.y);
 
         //txtSelectedNodePosition.text = string.Format("Position: <{0:0.00},{1:0.00},{2:0.00}>",
         //    transform.position.x,
@@ -222,6 +227,21 @@ public class PlatformDataNode : MonoBehaviour {
     public override string ToString()
     {
         return string.Format("{0},{1},{2}", i, j, NextPosition);
+    }
+
+    private void OnSceneLoaded(Scene activeScene, LoadSceneMode mode){//added by Moses 12-17
+        if(activeScene.name.Contains("Programming")){
+            transform.position =  new Vector3(transform.position.x,
+                                            NextPosition,
+                                            transform.position.z);
+        }
+        else{
+            transform.position =  new Vector3(transform.position.x,
+                                            0,
+                                            transform.position.z);
+            Selected=false;
+            transform.gameObject.GetComponent<Renderer>().material.color = Color.white;
+        }
     }
 
 }
