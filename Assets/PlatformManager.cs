@@ -85,14 +85,17 @@ namespace ver2
 
             BuildPlatform();
 
-            oldM = pcd.M;
-            oldN = pcd.N;
+            //oldM = pcd.M;//removed 12-16
+            //oldN = pcd.N;
         }
 
         private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
             if (platformNode != null)
             {
+                if (SceneManager.GetActiveScene().name.Contains("Main Menu"))
+                    DestroyPlatform();
+
                 if (SceneManager.GetActiveScene().name.Contains("Program"))
                     Program = true;
                 else
@@ -207,7 +210,8 @@ namespace ver2
                 {
                     for (int j = 0; j < oldN; j++)
                     {
-                        Destroy(platformNode[i, j], 0.1f);
+                        //Destroy(platformNode[i, j], 0.1f);
+                        Destroy(platformNode[i, j]);
                     }
                 }
 
@@ -257,6 +261,9 @@ namespace ver2
 
             if (OnPlatformManagerChanged != null)
                 OnPlatformManagerChanged(configurationData);
+
+            oldM=configurationData.M;
+            oldN=configurationData.N;
         }
 
         public void StartSimulationButtonClick()

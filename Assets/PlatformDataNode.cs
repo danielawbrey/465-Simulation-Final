@@ -150,7 +150,7 @@ public class PlatformDataNode : MonoBehaviour {
             
             if (Selected)
             {
-                transform.gameObject.GetComponent<Renderer>().material.color = Color.blue;
+                transform.gameObject.GetComponent<Renderer>().material.color = new Color(0.1f,0.7f,0.5f);//change color
 
                 UpdateUI();
             }
