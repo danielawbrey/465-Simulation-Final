@@ -20,6 +20,9 @@ public class PlatformDataNode : MonoBehaviour {
     public bool Selected;
     public bool Program;
 
+    public float riseSpeed=15;
+    public float tolerance=0.05f;
+
     public Color NextColor;
     public int i;
     public int j;
@@ -73,6 +76,9 @@ public class PlatformDataNode : MonoBehaviour {
 
                 transform.gameObject.GetComponentInChildren<Text>().text = string.Format("{0:0.00}", NextPosition);
             }
+        }
+        else{
+            riseSpeed = s.value;//added by moses 12-17
         }
     }
 
@@ -179,9 +185,9 @@ public class PlatformDataNode : MonoBehaviour {
                                                 new Vector3(transform.position.x,
                                                             NextPosition,
                                                             transform.position.z),
-                                                Time.deltaTime*4);//changed by Moses 12-15
+                                                Time.deltaTime*riseSpeed);//changed by Moses 12-15//4
 
-                if (NearlyEquals(transform.position.y, NextPosition))
+                if (NearlyEquals(transform.position.y, NextPosition,tolerance))
                 {
                     //NextPosition = 0;
                     //NextColor = Color.white;//commented out by Moses
@@ -211,7 +217,7 @@ public class PlatformDataNode : MonoBehaviour {
         }
     }
 
-    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference = 0.03f)//was 0.01f
+    public static bool NearlyEquals(float? value1, float? value2, float unimportantDifference)//was 0.01f//.03
     {
         if (value1 != value2)
         {

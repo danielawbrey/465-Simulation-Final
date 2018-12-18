@@ -51,6 +51,9 @@ public class UIManager : MonoBehaviour
     public InputField inputPlatformNDimension;
     public Slider sliderDeltaSpacing;
     public Slider sliderYRange;
+
+    public Slider sliderLerpSpeed;//added 12-17
+    public Text txtLerpSpeed;//added 12-17
     #endregion
 
     #region Selected Node Information Display Variables
@@ -232,6 +235,14 @@ public class UIManager : MonoBehaviour
             case "Node Height Slider":
                 {
                     txtPlatformYAxisRange.text = string.Format("{0:0.00}f", s.value);
+                    if (OnNodeProgramChanged != null)
+                        OnNodeProgramChanged(s);
+
+                    break;
+                }
+            case "Speed Slider"://added 12-17
+                {
+                    txtLerpSpeed.text = string.Format("{0:0.00}f", s.value);
                     if (OnNodeProgramChanged != null)
                         OnNodeProgramChanged(s);
 
